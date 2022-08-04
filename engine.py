@@ -32,10 +32,7 @@ def send_message(sender_id, msg, recipients):
     formatted_numbers = format_phone_numbers(recipients)
     user_name, api_key, sender, message, recipients = encode_values(sender_id, msg, formatted_numbers)
 
-    print(user_name, api_key)
-
     formatted_url = url.format(user_name,api_key,sender,message,0,recipients)
-    print(formatted_url)
 
     try:
         response = requests.request("GET", formatted_url)

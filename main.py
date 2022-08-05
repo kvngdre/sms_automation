@@ -29,7 +29,12 @@ st.write("\n")
 with st.form("format_message"):
     col1, col2 = st.columns([1, 4])
     with col1:
-        code = st.text_input("International Code ", placeholder="234") or "234"
+        code = (
+            st.text_input(
+                "International Code ", placeholder="234", help="Default is 234"
+            )
+            or "234"
+        )
     with col2:
         agent_numbers = st.text_input(
             "Agent Numbers",
@@ -49,7 +54,6 @@ with st.form("format_message"):
 if format:
     engine = SMS_Blast(code)
     formatted_message = engine.format_message(agent_numbers, message_body)
-    pass
 
     st.write("\n")
     with st.form("bulk_sms"):
@@ -59,16 +63,14 @@ if format:
         with col4:
             limit = st.number_input("Split On", value=5000)
 
-        # st.write(formatted_message)
+        st.write("Message Sample:")
+        st.info(formatted_message)
 
         submitted = st.form_submit_button("Submit")
-
-    # if format_message:
-    #     pass
 
     if submitted:
         with st.spinner("Processing..."):
             response = engine.send_message(
-                sender_id, limit, agent_numbers, message_body, recipients
+                sender_id, limit, agent_numbers, formatted_message, recipients
             )
         st.info(response)

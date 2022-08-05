@@ -11,7 +11,7 @@ class SMS_Blast:
     """
     A class for SMS blast.
 
-    ...
+    ....
 
     Attributes
     ----------
@@ -20,16 +20,37 @@ class SMS_Blast:
 
     Methods
     -------
-    format_phone_numbers(numbers: list)
+    __format_phone_numbers(numbers: list)
         Returns a string of recipients phone numbers formatted with international dial code and joined
         by comma(,)
     """
     def __init__(self, code):
         self.code = code
     
-    url = "https://api.ebulksms.com:4433/sendsms?username={0}&apikey={1}&sender={2}&messagetext={3}&flash={4}&recipients={5}"
+    __url = "https://api.ebulksms.com:4433/sendsms?username={0}&apikey={1}&sender={2}&messagetext={3}&flash={4}&recipients={5}"
 
-    
+
+    def format_message(self, agent_number, message):
+        split = agent_number.split(', ')
+        pass
+
+
+    def send_message(self, sender_id, limit, agent_numbers, msg, recipients):
+        formatted_numbers = self.__format_phone_numbers(recipients)
+        user_name, api_key, sender, message, recipients = self.__encode_values(sender_id, msg, formatted_numbers)
+
+        formatted_url = self.__url.format(user_name,api_key,sender,message,0,recipients)
+
+        try:
+            response = requests.request("GET", formatted_url)
+
+            return response.text
+
+        except Exception as error:
+            print(error)
+            return error
+
+
     def __format_phone_numbers(self, numbers: list) -> str:
         # eliminating number with less than 11 digits
         num_list = [num for num in numbers if len(num) > 10]
@@ -50,20 +71,4 @@ class SMS_Blast:
         message = quote_plus(message)
 
         return user_name, api_key, sender, message, recipients
-
-
-    def send_message(self, sender_id, limit, agent_numbers, msg, recipients):
-        formatted_numbers = self.__format_phone_numbers(recipients)
-        user_name, api_key, sender, message, recipients = self.__encode_values(sender_id, msg, formatted_numbers)
-
-        formatted_url = self.url.format(user_name,api_key,sender,message,0,recipients)
-
-        try:
-            response = requests.request("GET", formatted_url)
-
-            return response.text
-
-        except Exception as error:
-            print(error)
-            return error
 

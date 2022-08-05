@@ -57,7 +57,7 @@ with st.form("format_message"):
     with col3:
         sender_id = st.text_input("Sender ID", max_chars=11)
     with col4:
-        limit = st.number_input("Split On", value=5000)
+        limit = st.number_input("Batch Size", value=5000)
 
     st.write("Message Sample:")
     st.info(formatted_message)
@@ -69,7 +69,16 @@ with st.form("format_message"):
             st.error("No file uploaded")
             st.stop()
 
-        if not all(var in globals() for var in ('sender_id', 'limit', 'agent_numbers', 'message_body', 'unique_recipients')):
+        if not all(
+            var in globals()
+            for var in (
+                "sender_id",
+                "limit",
+                "agent_numbers",
+                "message_body",
+                "unique_recipients",
+            )
+        ):
             st.error("Missing required fields")
             st.stop()
 

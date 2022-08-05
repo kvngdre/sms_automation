@@ -49,28 +49,33 @@ with st.form("format_message"):
         max_chars=612,
     )
 
-    format = st.form_submit_button("Format message")
-
-if format:
     engine = SMS_Blast(code)
     formatted_message = engine.format_message(agent_numbers, message_body)
 
     st.write("\n")
-    with st.form("bulk_sms"):
-        col3, col4 = st.columns([1, 2])
-        with col3:
-            sender_id = st.text_input("Sender ID", max_chars=11)
-        with col4:
-            limit = st.number_input("Split On", value=5000)
+    col3, col4 = st.columns([1, 2])
+    with col3:
+        sender_id = st.text_input("Sender ID", max_chars=11)
+    with col4:
+        limit = st.number_input("Split On", value=5000)
 
-        st.write("Message Sample:")
-        st.info(formatted_message)
+    st.write("Message Sample:")
+    st.info(formatted_message)
 
-        submitted = st.form_submit_button("Submit")
+    submitted = st.form_submit_button("Submit")
 
     if submitted:
+        if phone_numbers is None:
+            st.error("No file uploaded")
+            st.stop()
+
+        if not all(var in globals() for var in ('sender_id', 'limit', 'agent_numbers', 'message_body', 'unique_recipients')):
+            st.error("Missing required fields")
+            st.stop()
+
         with st.spinner("Processing..."):
             response = engine.send_message(
-                sender_id, limit, agent_numbers, formatted_message, recipients
+                sender_id, limit, agent_numbers, message_body, unique_recipients
             )
+
         st.info(response)

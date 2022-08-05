@@ -1,4 +1,5 @@
 import os
+import math
 import requests
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
@@ -36,26 +37,32 @@ class SMS_Blast:
 
         return message.format(split_numbers[0])
 
-    def send_message(self, sender_id, limit, agent_numbers, msg, recipients):
-        formatted_numbers = self.__format_phone_numbers(recipients)
-        user_name, api_key, sender, message, recipients = self.__encode_values(
-            sender_id, msg, formatted_numbers
-        )
+    def send_message(self, sender_id: str, limit, agent_numbers, msg: str, recipients):
+        formatted_numbers_list = self.__format_phone_numbers(limit, recipients)
+        agent_numbers = agent_numbers.split(", ")
+        
+        for agent, number_list in zip(agent_numbers, formatted_numbers_list):
+            formatted_numbers = ",".join(number_list)
+            
 
-        formatted_url = self.__url.format(
-            user_name, api_key, sender, message, 0, recipients
-        )
+            user_name, api_key, sender, message, recipients = self.__encode_values(
+                sender_id, msg.format(agent), formatted_numbers
+            )
 
-        try:
-            response = requests.request("GET", formatted_url)
+            formatted_url = self.__url.format(
+                user_name, api_key, sender, message, 0, recipients
+            )
 
-            return response.text
+            try:
+                response = requests.request("GET", formatted_url)
 
-        except Exception as error:
-            print(error)
-            return error
+            except Exception as error:
+                print(error)
+                return error
 
-    def __format_phone_numbers(self, numbers: list) -> str:
+        return response.text
+
+    def __format_phone_numbers(self, limit: int, numbers: list) -> str:
         # eliminating number with less than 11 digits
         num_list = [num for num in numbers if len(num) > 10]
 
@@ -67,9 +74,18 @@ class SMS_Blast:
             for num in num_list
         ]
 
-        formatted_phone_numbers = ",".join(num_list)
+        min = 0
+        max = limit
+        result = []
 
-        return formatted_phone_numbers
+        for _ in range(math.ceil(len(num_list) / limit)):
+            result.append(num_list[min:max])
+            min = max
+            max += limit
+
+        print("result====", len(result))
+
+        return result
 
     def __encode_values(self, sender_id, message, recipients):
         user_name = quote_plus(os.environ.get("USER_NAME"))

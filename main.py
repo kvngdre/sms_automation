@@ -1,40 +1,50 @@
-from nbformat import write
 import pandas as pd
 import streamlit as st
 import engine
 
-st.header('EBULK SMS AUTOMATION')
+st.header('E-BULK SMS AUTOMATION')
 
 phone_numbers = st.file_uploader('Upload file', ['xlsx'])
 if phone_numbers is not None:
     try:
         df = pd.read_excel(phone_numbers, dtype={'Phone': str})
-        numbers_list = list(df.Phone)
+        recipients = list(df.Phone)
     except AttributeError as error:
-        st.error(error)
+        st.error("Failed to locate column 'Phone' in upload")
         st.stop()
 
-    col1, col2, col3 = st.columns([1, 3, 4])
-    with col1:
-        st.write('Row count:')
-    with col2:
-        st.write(df.shape[0])
-
+    st.success('Row count: {:,}'.format(df.shape[0]))
 
 st.write('\n')
-with st.form('bulk_sms'):
-    col3, col4 = st.columns([1, 3])
-
-    with col3:
-        sender_id = st.text_input('Enter sender id:')
+with st.form('format_message'):
+    agent_numbers = st.text_input('Agent Numbers', placeholder='0903 456 4788, 0803 445 5678', help='Split number with commas')
 
     message_body = st.text_area('Type message here', max_chars=612)
 
+    format = st.form_submit_button('Format message')
 
-    submitted = st.form_submit_button('Submit')
 
-if submitted:
-    with st.spinner():
-        response = engine.send_message(sender_id, message_body, numbers_list)
-    st.info(response)
+if format:
+    pass
+
     
+    st.write('\n')
+    with st.form('bulk_sms'):
+        col1, col2 = st.columns([1, 2])
+        with col1:
+            sender_id = st.text_input('Sender ID', max_chars=11)
+        with col2:
+            limit = st.number_input('Split On', value=5000)
+
+        # st.write(formatted_message)
+
+        submitted = st.form_submit_button('Format message')
+
+    # if format_message:
+    #     pass
+
+    if submitted:
+        with st.spinner('Processing...'):
+            response = engine.send_message(sender_id, limit, agent_numbers, message_body, recipients)
+        st.info(response)
+        
